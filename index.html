@@ -1,0 +1,307 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>TilapiaSpatial</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0b5d7a">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f4f8fa;--fg:#14262e;--card:#fff;--ac:#0b5d7a;--bd:#cfdde3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#10191d;--fg:#e4eef2;--card:#18262c;--ac:#4fb3d3;--bd:#2c4048}}
+:root[data-theme=dark]{--bg:#10191d;--fg:#e4eef2;--card:#18262c;--ac:#4fb3d3;--bd:#2c4048}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 system-ui,sans-serif}
+header{background:#0b5d7a;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+header b{font-size:17px}nav{display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bd);position:sticky;top:calc(env(safe-area-inset-top,0px) + 46px);z-index:4}
+nav button{flex:1;padding:11px 12px;white-space:nowrap;border:0;background:none;color:var(--fg);font:inherit;font-size:13px;border-bottom:3px solid transparent}nav .on{border-color:var(--ac);font-weight:700;color:var(--ac)}
+main{padding:12px;max-width:760px;margin:auto}.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px}
+label{display:block;font-size:12px;margin-top:8px}input,select{width:100%;padding:9px;border:1px solid var(--bd);border-radius:7px;background:var(--bg);color:var(--fg);font:inherit;box-sizing:border-box}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:0 10px}.b{display:inline-block;padding:10px 14px;margin:8px 6px 0 0;border:0;border-radius:8px;background:var(--ac);color:#fff;font:inherit;width:auto}.b.s{background:none;border:1px solid var(--ac);color:var(--ac)}
+.sc{overflow-x:auto}table{border-collapse:collapse;font-size:12.5px;width:100%}td,th{border:1px solid var(--bd);padding:4px 6px;text-align:right;white-space:nowrap}th{background:var(--bg)}td:first-child,th:first-child{text-align:left}
+canvas{width:100%;border:1px solid var(--bd);border-radius:8px;background:#fff}.p{font-size:12px;opacity:.85}.h{display:none}.w{color:#b45309;font-weight:600}.ok{color:#15803d;font-weight:600}pre{white-space:pre-wrap;font-size:11.5px;max-height:60vh;overflow:auto;background:var(--bg);padding:8px;border-radius:7px}a.x{color:var(--ac);text-decoration:none;padding:0 6px}
+.rep h3{margin:4px 0 8px;font-size:17px}.rep h4{margin:14px 0 4px;font-size:14px}.rep p,.rep li{margin:6px 0}.rep img{max-width:100%;border:1px solid var(--bd);background:#fff}.rep table{margin-top:6px}.rep td:first-child,.rep th:first-child{white-space:normal}
+</style></head><body>
+<header><b>🐟 TilapiaSpatial</b><button class="b" id="inst" style="margin:0;background:#fff;color:#0b5d7a">⬇ Install app</button></header>
+<nav id="nav"><button data-t="d" class="on">Data</button><button data-t="a">Analysis</button><button data-t="p">Plots</button><button data-t="r">R</button><button data-t="rpI">Interpret</button><button data-t="rpD">Discuss</button><button data-t="rpC">Conclude</button><button data-t="e">Export</button></nav>
+<main>
+<section id="d"><div class="card"><b id="ft">New farm record</b><div class="g" id="form"></div>
+<div class="g"><label>Longitude (°)<input id="lon" type="number" step="any" inputmode="decimal"></label><label>Latitude (°)<input id="lat" type="number" step="any" inputmode="decimal"></label></div>
+<label>GPS accuracy (m)<input id="gps_accuracy_m" type="number" step="any" inputmode="decimal"></label>
+<p class="p">Stand at the pond or cage cluster, in the open, then tap the GPS button. Wait until accuracy is ≤ 10–15 m.</p>
+<button class="b s" id="gps">📍 Get my location (GPS)</button><button class="b" id="add">Save record</button><button class="b s" id="cancel" style="display:none">Cancel edit</button><div class="p" id="gm"></div><div class="p" id="msg"></div></div>
+<div class="card"><button class="b" id="demo">Load demo data (60 farms)</button><label class="b s">Import CSV<input id="imp" type="file" accept=".csv,text/csv" style="display:none"></label><button class="b s" id="clr">Clear all</button>
+<p class="p" id="cnt"></p><div class="sc" id="list"></div></div></section>
+<section id="a" class="h"><div class="card"><label>Neighbours (k nearest farms, 2–15)<input id="k" type="number" value="5" min="2" max="15"></label><label>Permutations (99–4999)<input id="np" type="number" value="999" step="100"></label><button class="b" id="run">Run analysis</button><div class="p" id="am"></div></div><div id="out"></div></section>
+<section id="p" class="h"><div class="card"><select id="ps"><option value="map">Fig 1: Mortality map</option><option value="lisa">Fig 2: LISA cluster map</option><option value="gi">Fig 3: Getis-Ord Gi* map</option><option value="mo">Fig 4: Moran scatterplot</option><option value="bx">Fig 5: Mortality by water body</option><option value="sc">Fig 6: Scan-statistic cluster</option></select>
+<button class="b" id="pr">Draw</button><button class="b s" id="png">Save PNG (2400×1600)</button></div><canvas id="cv" width="2400" height="1600"></canvas></section>
+<section id="r" class="h"><div class="card"><b>Run the analysis in real R (experimental)</b><p class="p">Loads R (WebR) in your browser and runs the full thesis script: spdep, Kulldorff scan, GLMMs. Needs internet. First run downloads R and packages (tens of MB, can take several minutes). If a package is unavailable, that test shows “FAILED” and the rest still run. Keep this screen open.</p><button class="b" id="rr">Run in R</button><button class="b s" id="rc">Copy output</button><pre id="rout">Output appears here.</pre></div></section>
+<section id="e" class="h"><div class="card"><button class="b" id="xc">Download data CSV</button><button class="b" id="xr">Download R script</button><button class="b s" id="xt">Download results tables</button>
+<p class="p">The Analysis tab uses a fast built-in engine (JavaScript). The R tab and the R script give the full R results for your thesis. Data are stored only on this phone: export regularly.</p></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),mean=a=>a.reduce((s,x)=>s+x,0)/a.length,sd=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/a.length)};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DEMO=`farm_id,district,water_body,lon,lat,gps_accuracy_m,system,stocked,dead,density_m3,DO_mgL,temp_C,pH,NH3_mgL,biosecurity,date_recorded
+F001,Asuogyaman,Lake Volta (Akosombo),0.05224,6.30722,10,Pond,6751,183,50.9,6.56,29.9,7.18,0.135,5,2026-02-12
+F002,Asuogyaman,Lake Volta (Akosombo),0.07701,6.30483,13,Cage,10379,328,38.7,4.94,29.8,7.25,0.034,9,2026-02-17
+F003,Asuogyaman,Lake Volta (Akosombo),0.05504,6.34045,12,Pond,6245,574,46.0,5.46,27.4,7.84,0.339,4,2026-02-13
+F004,Asuogyaman,Lake Volta (Akosombo),0.11069,6.30613,5,Cage,3374,534,45.2,4.56,31.0,7.54,0.314,7,2026-02-18
+F005,Asuogyaman,Lake Volta (Akosombo),0.10895,6.28009,6,Pond,12374,937,42.5,4.9,29.0,7.18,0.227,6,2026-02-15
+F006,Asuogyaman,Lake Volta (Akosombo),0.04805,6.3388,13,Pond,9881,516,67.1,5.53,27.3,7.37,0.02,4,2026-02-19
+F007,Asuogyaman,Lake Volta (Akosombo),0.05718,6.33861,3,Cage,6681,311,66.8,6.67,28.0,7.32,0.261,0,2026-02-26
+F008,Asuogyaman,Lake Volta (Akosombo),0.10058,6.24129,12,Cage,11979,331,18.7,4.15,29.2,8.11,0.126,6,2026-02-05
+F009,Asuogyaman,Lake Volta (Akosombo),0.06751,6.34189,12,Cage,9316,544,27.7,5.27,29.7,7.49,0.416,7,2026-02-16
+F010,Asuogyaman,Lake Volta (Akosombo),0.0414,6.32294,8,Pond,3007,292,53.4,5.71,30.6,7.12,0.092,1,2026-02-12
+F011,Asuogyaman,Lake Volta (Akosombo),0.04289,6.23889,6,Cage,13903,508,68.0,6.04,26.9,7.12,0.716,3,2026-02-10
+F012,Asuogyaman,Lake Volta (Akosombo),0.08318,6.30651,6,Pond,6674,160,38.3,6.7,31.2,7.52,0.175,3,2026-02-07
+F013,North Tongu,Volta floodplain (Mepe),0.02115,6.0649,6,Pond,9101,1255,46.2,5.31,33.1,7.68,0.177,10,2026-02-02
+F014,North Tongu,Volta floodplain (Mepe),0.11241,6.06713,8,Cage,13941,4089,49.6,5.92,27.8,6.59,0.602,3,2026-02-11
+F015,North Tongu,Volta floodplain (Mepe),0.07454,6.07259,9,Pond,2090,354,26.4,5.43,28.7,6.0,0.389,5,2026-02-23
+F016,North Tongu,Volta floodplain (Mepe),0.10266,6.05416,9,Cage,5113,1013,24.8,5.12,29.1,7.36,0.332,2,2026-02-03
+F017,North Tongu,Volta floodplain (Mepe),0.11292,6.07592,14,Cage,8762,948,41.8,4.81,29.1,7.04,0.209,6,2026-02-11
+F018,North Tongu,Volta floodplain (Mepe),0.11301,6.04437,12,Cage,2115,405,19.2,4.1,27.4,7.22,0.259,10,2026-02-27
+F019,North Tongu,Volta floodplain (Mepe),0.12664,6.06429,10,Pond,4907,333,69.3,7.03,30.4,7.56,0.162,6,2026-02-26
+F020,North Tongu,Volta floodplain (Mepe),0.13276,6.04677,14,Cage,4655,1392,47.5,4.76,29.2,6.83,0.575,0,2026-02-06
+F021,North Tongu,Volta floodplain (Mepe),0.10272,6.02939,5,Pond,7754,2995,43.7,3.61,29.2,7.31,0.417,1,2026-02-01
+F022,North Tongu,Volta floodplain (Mepe),0.13363,6.01915,5,Cage,12473,826,33.5,6.08,29.1,7.4,0.141,5,2026-02-19
+F023,North Tongu,Volta floodplain (Mepe),0.07721,6.0585,10,Cage,13715,3104,62.2,5.2,28.1,7.66,0.272,5,2026-02-01
+F024,North Tongu,Volta floodplain (Mepe),0.06363,6.08253,3,Pond,11618,1483,41.1,4.81,31.3,7.26,0.122,9,2026-02-09
+F025,South Tongu,Lower Volta (Sogakope),0.60698,5.97801,3,Pond,8526,843,64.5,4.93,30.2,7.06,0.175,7,2026-02-14
+F026,South Tongu,Lower Volta (Sogakope),0.59379,5.9832,9,Cage,9406,1876,37.7,4.38,29.6,7.45,0.142,2,2026-02-24
+F027,South Tongu,Lower Volta (Sogakope),0.58611,6.00937,8,Pond,9210,1941,63.0,5.24,28.5,7.21,0.429,7,2026-02-03
+F028,South Tongu,Lower Volta (Sogakope),0.66502,5.96694,13,Cage,13947,2334,43.9,5.07,27.6,8.1,0.193,1,2026-02-18
+F029,South Tongu,Lower Volta (Sogakope),0.5501,5.97682,10,Pond,8944,1937,50.1,4.46,28.8,8.04,0.446,6,2026-02-15
+F030,South Tongu,Lower Volta (Sogakope),0.56471,5.93241,9,Pond,10292,1732,54.6,4.92,29.4,7.06,0.236,2,2026-02-04
+F031,South Tongu,Lower Volta (Sogakope),0.62129,6.0238,8,Cage,7719,1293,15.3,4.42,29.3,6.92,0.114,4,2026-02-23
+F032,South Tongu,Lower Volta (Sogakope),0.65908,5.9767,6,Cage,11352,3151,66.3,4.37,28.9,8.11,0.221,0,2026-02-23
+F033,South Tongu,Lower Volta (Sogakope),0.57588,6.04368,3,Cage,9987,4211,48.5,4.22,29.7,6.87,0.285,8,2026-02-14
+F034,South Tongu,Lower Volta (Sogakope),0.61331,6.03554,5,Cage,8439,1954,46.3,4.97,26.6,6.96,0.099,1,2026-02-26
+F035,South Tongu,Lower Volta (Sogakope),0.57772,5.97091,11,Cage,10318,742,32.9,4.95,28.7,6.99,0.153,0,2026-02-17
+F036,South Tongu,Lower Volta (Sogakope),0.61399,5.97044,5,Pond,14811,2028,44.2,4.7,31.1,7.38,0.29,5,2026-02-25
+F037,Keta,Keta Lagoon (Anloga),0.96533,5.92128,7,Cage,6632,139,18.1,6.03,27.0,7.37,0.193,1,2026-02-26
+F038,Keta,Keta Lagoon (Anloga),0.91115,5.96501,3,Pond,6103,477,21.3,4.34,30.3,7.47,0.02,5,2026-02-16
+F039,Keta,Keta Lagoon (Anloga),0.99429,5.89247,12,Cage,5807,49,24.2,6.34,29.4,8.59,0.235,3,2026-02-08
+F040,Keta,Keta Lagoon (Anloga),0.94178,5.97777,5,Cage,3504,106,43.0,6.97,29.3,7.51,0.284,8,2026-02-04
+F041,Keta,Keta Lagoon (Anloga),0.88603,5.97122,6,Pond,14190,160,34.6,5.74,28.4,7.31,0.129,9,2026-02-16
+F042,Keta,Keta Lagoon (Anloga),0.97948,5.97931,13,Pond,3163,155,44.2,3.81,28.9,6.54,0.101,7,2026-02-06
+F043,Keta,Keta Lagoon (Anloga),0.95171,6.03902,9,Cage,4473,843,39.7,3.75,29.1,8.33,0.167,4,2026-02-21
+F044,Keta,Keta Lagoon (Anloga),0.94355,5.94164,12,Cage,10489,277,37.4,5.88,27.2,7.19,0.134,4,2026-02-26
+F045,Keta,Keta Lagoon (Anloga),0.92279,5.95689,10,Pond,4295,175,40.0,3.67,30.3,7.02,0.03,9,2026-02-07
+F046,Keta,Keta Lagoon (Anloga),0.98621,5.97443,11,Pond,6188,209,34.4,5.11,30.9,7.67,0.121,4,2026-02-15
+F047,Keta,Keta Lagoon (Anloga),0.96087,5.96099,4,Pond,8636,226,27.5,5.33,27.9,8.24,0.082,7,2026-02-02
+F048,Keta,Keta Lagoon (Anloga),0.94364,5.96393,9,Pond,8475,558,27.5,4.25,28.2,7.31,0.062,1,2026-02-05
+F049,Hohoe,Dayi River (Hohoe),0.46238,7.17994,9,Cage,4308,72,70.0,5.48,29.0,7.38,0.02,10,2026-02-11
+F050,Hohoe,Dayi River (Hohoe),0.44217,7.14739,13,Pond,12367,108,39.2,5.82,29.4,7.56,0.031,5,2026-02-24
+F051,Hohoe,Dayi River (Hohoe),0.46451,7.14263,7,Cage,14365,164,31.4,6.4,29.1,7.19,0.389,7,2026-02-27
+F052,Hohoe,Dayi River (Hohoe),0.46893,7.18032,10,Pond,14538,384,51.5,5.48,29.5,7.4,0.137,10,2026-02-18
+F053,Hohoe,Dayi River (Hohoe),0.4806,7.08253,4,Cage,4002,79,43.8,4.77,29.8,7.68,0.346,8,2026-02-16
+F054,Hohoe,Dayi River (Hohoe),0.451,7.16562,7,Cage,14422,343,19.9,6.32,28.7,7.64,0.688,7,2026-02-16
+F055,Hohoe,Dayi River (Hohoe),0.47685,7.1942,7,Pond,14546,689,58.1,6.07,27.3,6.81,0.274,7,2026-02-02
+F056,Hohoe,Dayi River (Hohoe),0.48454,7.12877,5,Cage,10945,111,47.1,6.63,28.6,6.35,0.025,6,2026-02-11
+F057,Hohoe,Dayi River (Hohoe),0.36989,7.17677,12,Cage,7828,24,30.9,7.37,29.3,6.91,0.02,8,2026-02-27
+F058,Hohoe,Dayi River (Hohoe),0.4676,7.134,7,Cage,10620,78,30.7,6.65,27.6,7.27,0.02,5,2026-02-12
+F059,Hohoe,Dayi River (Hohoe),0.42679,7.19231,14,Pond,13912,110,22.8,6.93,30.2,6.76,0.03,9,2026-02-06
+F060,Hohoe,Dayi River (Hohoe),0.51665,7.1263,9,Cage,10590,349,63.8,5.54,27.1,7.68,0.211,2,2026-02-07
+`;
+const COLS=['farm_id','district','water_body','lon','lat','gps_accuracy_m','system','stocked','dead','density_m3','DO_mgL','temp_C','pH','NH3_mgL','biosecurity','date_recorded'],NUM=['lon','lat','gps_accuracy_m','stocked','dead','density_m3','DO_mgL','temp_C','pH','NH3_mgL','biosecurity'];
+const F=[['farm_id','Farm ID','text'],['district','District','text'],['water_body','Shared water body','text'],['system','Production system',['Cage','Pond']],['stocked','Fish stocked (n)','number','min=1 step=1'],['dead','Fish dead (n)','number','min=0 step=1'],['density_m3','Stocking density (fish/m³)','number','min=0 step=any'],['DO_mgL','Dissolved oxygen (mg/L)','number','min=0 step=any'],['temp_C','Water temp (°C)','number','min=0 step=any'],['pH','pH','number','min=0 max=14 step=any'],['NH3_mgL','Un-ionised NH₃ (mg/L)','number','min=0 step=any'],['biosecurity','Biosecurity score (0–10)','number','min=0 max=10 step=1'],['date_recorded','Date recorded','date']];
+let D=[],A=null,edit=-1,failed=false;
+try{D=JSON.parse(localStorage.getItem('tf')||'[]')}catch(e){}
+const save=()=>{try{localStorage.setItem('tf',JSON.stringify(D));failed=false}catch(e){failed=true;msg('⚠ Could not save on this device (storage full or private mode). Export CSV now.',1)}};
+const msg=(t,w)=>{$('#msg').className='p '+(w?'w':'');$('#msg').textContent=t};
+$('#form').innerHTML=F.map(([n,l,t,a])=>`<label>${l}${Array.isArray(t)?`<select id="f_${n}">${t.map(x=>`<option>${x}</option>`).join('')}</select>`:`<input id="f_${n}" type="${t}" ${a||''} ${n=='water_body'?'list="wb"':''} ${t=='number'?'inputmode="decimal"':''}>`}</label>`).join('')+'<datalist id="wb"></datalist>';
+const today=()=>new Date().toISOString().slice(0,10);$('#f_date_recorded').value=today();
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x==b));['d','a','p','r','rpI','rpD','rpC','e'].forEach(t=>$('#'+t).classList.toggle('h',t!=b.dataset.t));if(b.dataset.t[0]=='r'&&b.dataset.t.length==3)showRep(b.dataset.t[2])});
+const changed=()=>{A=null;save();draw()};
+function draw(){$('#cnt').textContent=D.length+' farm records'+(D.length&&D.length<30?' (30+ recommended for spatial tests)':'');
+ $('#wb').innerHTML=[...new Set(D.map(d=>d.water_body))].map(x=>`<option value="${esc(x)}">`).join('');
+ $('#list').innerHTML=D.length?'<table><tr><th>Farm<th>Water body<th>Mort %<th>GPS ±m<th></tr>'+D.map((d,i)=>`<tr><td>${esc(d.farm_id)}<td>${esc(d.water_body)}<td>${(100*d.dead/d.stocked).toFixed(1)}<td class="${d.gps_accuracy_m>30?'w':''}">${d.gps_accuracy_m??''}<td><a class="x" href="#" data-e="${i}">✎</a><a class="x" href="#" data-x="${i}">✕</a></tr>`).join('')+'</table>':''}
+$('#list').onclick=e=>{const t=e.target;if(t.dataset.x!==undefined){e.preventDefault();if(confirm('Delete '+D[+t.dataset.x].farm_id+'?')){D.splice(+t.dataset.x,1);changed()}}
+ if(t.dataset.e!==undefined){e.preventDefault();edit=+t.dataset.e;const d=D[edit];F.forEach(([n])=>$('#f_'+n).value=d[n]??'');['lon','lat','gps_accuracy_m'].forEach(n=>$('#'+n).value=d[n]??'');$('#ft').textContent='Editing '+d.farm_id;$('#cancel').style.display='inline-block';scrollTo(0,0)}};
+function resetForm(){edit=-1;F.forEach(([n,,t])=>{if(!Array.isArray(t)&&n!='district'&&n!='water_body')$('#f_'+n).value=''});$('#f_date_recorded').value=today();['lon','lat','gps_accuracy_m'].forEach(n=>$('#'+n).value='');$('#ft').textContent='New farm record';$('#cancel').style.display='none';$('#gm').textContent=''}
+$('#cancel').onclick=()=>{resetForm();msg('')};
+$('#add').onclick=()=>{const r={};F.forEach(([n])=>r[n]=$('#f_'+n).value.trim());['lon','lat','gps_accuracy_m'].forEach(n=>r[n]=$('#'+n).value.trim());
+ NUM.forEach(n=>r[n]=r[n]===''?null:+r[n]);
+ if(!r.farm_id||!r.water_body)return msg('Farm ID and water body are required.',1);
+ if(r.stocked==null||!(r.stocked>0)||!Number.isInteger(r.stocked))return msg('Fish stocked must be a whole number above 0.',1);
+ if(r.dead==null||r.dead<0||!Number.isInteger(r.dead)||r.dead>r.stocked)return msg('Fish dead must be a whole number between 0 and fish stocked.',1);
+ if(r.lon==null||r.lat==null||Math.abs(r.lon)>180||Math.abs(r.lat)>90)return msg('Longitude and latitude are required: tap the GPS button or type them.',1);
+ if(r.biosecurity!=null&&(r.biosecurity<0||r.biosecurity>10))return msg('Biosecurity score must be 0–10.',1);
+ if(r.pH!=null&&(r.pH<0||r.pH>14))return msg('pH must be 0–14.',1);
+ if(D.some((d,i)=>d.farm_id==r.farm_id&&i!=edit))return msg('Farm ID already exists. Use a unique ID.',1);
+ if((r.lon<-.5||r.lon>1.5||r.lat<5.5||r.lat>9)&&!confirm('This location is outside the Volta Region area. Save anyway?'))return;
+ edit>=0?D[edit]=r:D.push(r);const id=r.farm_id;resetForm();changed();if(!failed)msg('Saved ✔ '+id)};
+// ---- GPS
+let wid=null,gt=null;const stopGps=(done,b)=>{if(wid!=null)navigator.geolocation.clearWatch(wid);wid=null;clearTimeout(gt);$('#gps').textContent='📍 Get my location (GPS)';if(done&&b){const ac=Math.round(b.accuracy);$('#gm').className='p '+(ac<=15?'ok':'w');$('#gm').textContent=`Location set, accuracy ±${ac} m.`+(ac>30?' Poor accuracy: move to open sky and try again.':'')}};
+$('#gps').onclick=()=>{if(wid!=null)return stopGps(1,window._b);
+ if(!navigator.geolocation||!isSecureContext)return($('#gm').className='p w',$('#gm').textContent='GPS needs a secure (https) page and a device with location.');
+ let best=null;window._b=null;$('#gps').textContent='⏹ Reading GPS… tap to stop';$('#gm').className='p';$('#gm').textContent='Waiting for GPS… (allow location if asked)';
+ wid=navigator.geolocation.watchPosition(p=>{const c=p.coords;if(!best||c.accuracy<best.accuracy){best=c;window._b=c;$('#lon').value=c.longitude.toFixed(6);$('#lat').value=c.latitude.toFixed(6);$('#gps_accuracy_m').value=Math.round(c.accuracy)}$('#gm').textContent=`Best accuracy so far ±${Math.round(best.accuracy)} m…`;if(best.accuracy<=5)stopGps(1,best)},
+  e=>{stopGps();$('#gm').className='p w';$('#gm').textContent=e.code==1?'Location permission denied. In Chrome: ⋮ → Settings → Site settings → Location → allow, and switch on phone GPS.':e.code==2?'Position unavailable. Switch on phone GPS / go outdoors.':'GPS timed out. Move to open sky and retry.'},{enableHighAccuracy:true,maximumAge:0,timeout:30000});
+ gt=setTimeout(()=>{if(wid!=null){stopGps(1,best);if(!best){$('#gm').className='p w';$('#gm').textContent='No GPS fix. Move to open sky and retry.'}}},30000)};
+// ---- data in/out
+function parseCSV(t){t=t.replace(/^\uFEFF/,'').trim();const rows=[];let r=[],c='',q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'&&t[i+1]=='"'){c+='"';i++}else if(ch=='"')q=false;else c+=ch}else if(ch=='"')q=true;else if(ch==','){r.push(c);c=''}else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&t[i+1]=='\n')i++;r.push(c);rows.push(r);r=[];c=''}else c+=ch}r.push(c);rows.push(r);return rows}
+function load(t,name){const rows=parseCSV(t),h=rows[0].map(x=>x.trim());const need=['farm_id','water_body','lon','lat','stocked','dead'];const miss=need.filter(n=>!h.includes(n));if(miss.length)return msg('CSV missing columns: '+miss.join(', '),1);
+ const out=[],bad=[];rows.slice(1).forEach((v,ri)=>{if(v.length<2&&!v[0])return;const o={};h.forEach((k,i)=>{const x=(v[i]??'').trim();o[k]=NUM.includes(k)?(x===''?null:+x):x});if(!o.farm_id||!o.water_body||!(o.stocked>0)||!(o.dead>=0&&o.dead<=o.stocked)||!isFinite(o.lon)||!isFinite(o.lat)||o.lon==null||o.lat==null)bad.push(ri+2);else out.push(COLS.reduce((a,k)=>(a[k]=o[k]??(NUM.includes(k)?null:''),a),{}))});
+ if(!out.length)return msg('No valid rows found.',1);if(D.length&&!confirm(`Replace the ${D.length} records on this device with ${out.length} records from ${name}?`))return;D=out;changed();msg(`Loaded ${out.length} farms.`+(bad.length?` Skipped invalid rows: ${bad.slice(0,10).join(', ')}.`:''),bad.length)}
+$('#demo').onclick=()=>load(DEMO,'demo');$('#imp').onchange=async e=>{if(e.target.files[0])load(await e.target.files[0].text(),e.target.files[0].name);e.target.value=''};
+$('#clr').onclick=()=>{if(confirm('Delete all records on this device?')){D=[];changed()}};
+const q=v=>{v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+const csv=()=>COLS.join(',')+'\n'+D.map(d=>COLS.map(c=>q(d[c])).join(',')).join('\n')+'\n';
+const dl=(n,t,m='text/plain')=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;document.body.appendChild(a);a.click();a.remove()};
+$('#xc').onclick=()=>D.length?dl('tilapia_data.csv',csv(),'text/csv'):alert('No data yet');
+const rscript=()=>String.raw`for(p in c("spdep","SpatialEpi","lme4","performance")) try(library(p,character.only=TRUE),silent=TRUE)
+set.seed(2026)
+sec<-function(t,e){cat("\n=== ",t," ===\n");r<-try(e,silent=TRUE);if(inherits(r,"try-error")) cat("FAILED:",conditionMessage(attr(r,"condition")),"\n") else print(r)}
+farms<-read.csv("tilapia_data.csv",stringsAsFactors=FALSE)
+farms$water_body<-factor(farms$water_body);farms$mort_rate<-farms$dead/farms$stocked;farms$outbreak<-as.integer(farms$mort_rate>=0.10)
+xy<-cbind(farms$lon*111.32*cos(mean(farms$lat)*pi/180),farms$lat*110.57)
+nb<-try(knn2nb(knearneigh(xy,k=${Math.min(+$('#k').value||5,15)})));lw<-try(nb2listw(nb,style="W"))
+sec("Descriptives by water body",aggregate(cbind(stocked,dead)~water_body,farms,sum))
+sec("Moran's I (permutation)",moran.mc(farms$mort_rate,lw,nsim=999))
+sec("Join-count (outbreak >=10%)",joincount.mc(factor(farms$outbreak),lw,nsim=999))
+sec("LISA clusters",{li<-localmoran_perm(farms$mort_rate,lw,nsim=499);table(ifelse(li[,"Pr(folded) Sim"]>0.05,"Not significant",as.character(attr(li,"quadr")$mean)))})
+sec("Getis-Ord Gi* hot/cold farms",{g<-as.numeric(localG(farms$mort_rate,nb2listw(include.self(nb),style="B")));c(hot=sum(g>1.96),cold=sum(g< -1.96))})
+sec("Kulldorff scan (most likely cluster)",kulldorff(xy/1000,farms$dead,farms$stocked,sum(farms$dead)*farms$stocked/sum(farms$stocked),0.5,n.simulations=999,alpha.level=0.05,plot=FALSE)$most.likely.cluster)
+sec("Kruskal-Wallis by water body",kruskal.test(mort_rate~water_body,data=farms))
+sec("Null GLMM: ICC for water body",{m0<-glmer(cbind(dead,stocked-dead)~1+(1|water_body)+(1|farm_id),data=farms,family=binomial);icc(m0,by_group=TRUE)})
+sec("GLMM without/with water body: AIC, odds ratios, residual Moran",{f<-cbind(dead,stocked-dead)~scale(DO_mgL)+scale(NH3_mgL)+scale(density_m3)+scale(biosecurity)+(1|farm_id);m1<-glmer(f,data=farms,family=binomial);m2<-update(m1,.~.+(1|water_body));ok<-complete.cases(farms[,c("DO_mgL","NH3_mgL","density_m3","biosecurity")]);list(AIC=AIC(m1,m2),OR_m2=exp(fixef(m2)),moran_m1=moran.test(residuals(m1,"pearson"),lw),moran_m2=moran.test(residuals(m2,"pearson"),lw))})
+sec("Same-water pair permutation test (p)",{y<-farms$mort_rate;dm<-abs(outer(y,y,"-"));ut<-upper.tri(dm);st<-function(l){s<-outer(as.character(l),as.character(l),"==");mean(dm[ut&s])-mean(dm[ut&!s])};ob<-st(farms$water_body);pm<-replicate(999,st(sample(farms$water_body)));c(observed=ob,p=(1+sum(pm<=ob))/1000)})
+if(interactive()&&requireNamespace("ggplot2",quietly=TRUE)){library(ggplot2);ggplot(farms,aes(lon,lat,colour=mort_rate*100,size=stocked))+geom_point()+scale_colour_viridis_c(option="B",direction=-1,name="Mortality (%)")+coord_fixed(1/cos(mean(farms$lat)*pi/180))+theme_bw(10);ggsave("fig1.tiff",width=170,height=120,units="mm",dpi=300,compression="lzw")}
+`;
+$('#xr').onclick=()=>dl('analysis.R',rscript());
+$('#rr').onclick=async()=>{const o=$('#rout'),log=t=>o.textContent+='\n'+t;if(D.length<10)return o.textContent='Need at least 10 farms. Load the demo data first.';
+ o.textContent='Loading R (WebR)… this can take several minutes the first time.';
+ try{const {WebR}=await import('https://webr.r-wasm.org/latest/webr.mjs');const w=new WebR();await w.init();log('R ready. Installing packages…');
+  for(const p of ['spdep','lme4','SpatialEpi','performance']){try{await w.installPackages([p]);log('✔ '+p)}catch(e){log('✘ '+p+' ('+(e.message||e)+')')}}
+  await w.FS.writeFile('/home/web_user/tilapia_data.csv',new TextEncoder().encode(csv()));log('Running analysis…');
+  const sh=await new w.Shelter();const r=await sh.captureR(rscript());o.textContent=r.output.map(x=>x.data).join('\n');await sh.purge()}
+ catch(e){log('R could not run here: '+(e.message||e)+'\nUse “Download R script” and run it in RStudio instead.')}};
+$('#rc').onclick=()=>navigator.clipboard&&navigator.clipboard.writeText($('#rout').textContent);
+// ---- statistics
+function R_(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function lgam(x){const c=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,.1208650973866179e-2,-.5395239384953e-5];let y=x,t=x+5.5;t-=(x+.5)*Math.log(t);let s=1.000000000190015;c.forEach(v=>s+=v/++y);return -t+Math.log(2.5066282746310005*s/x)}
+function chiP(H,df){const a=df/2,x=H/2;if(x<=0)return 1;let s=1/a,t=s;for(let n=1;n<5000;n++){t*=x/(a+n);s+=t;if(Math.abs(t)<1e-13*s)break}return Math.max(0,1-s*Math.exp(-x+a*Math.log(x)-lgam(a)))}
+function analyse(){const n=D.length;if(n<10)throw Error('Need at least 10 farms (30+ recommended).');
+ const rnd=R_(2026),shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a},samp=(a,k)=>{a=a.slice();for(let i=0;i<k;i++){const j=i+Math.floor(rnd()*(a.length-i));[a[i],a[j]]=[a[j],a[i]]}return a.slice(0,k)};
+ const k=Math.max(2,Math.min(+$('#k').value||5,n-1,15)),NP=Math.max(99,Math.min(+$('#np').value||999,4999)),y=D.map(d=>d.dead/d.stocked),m=mean(y),s=sd(y);if(!(s>0))throw Error('All farms have identical mortality.');
+ const z=y.map(v=>(v-m)/s),X=D.map(d=>[d.lon*111.32*Math.cos(d.lat*Math.PI/180),d.lat*110.57]),dist=X.map(a=>X.map(b=>Math.hypot(a[0]-b[0],a[1]-b[1]))),ord=dist.map(r=>r.map((_,j)=>j).sort((p,q)=>r[p]-r[q]||p-q)),nb=ord.map((o,i)=>o.filter(j=>j!=i).slice(0,k));
+ const lag=v=>nb.map(l=>mean(l.map(j=>v[j]))),mI=v=>{const L=lag(v);return v.reduce((t,x,i)=>t+x*L[i],0)/v.reduce((t,x)=>t+x*x,0)},mp=v=>{const I_=mI(v);return[I_,(1+Array.from({length:NP},()=>mI(shuf(v))).filter(w=>w>=I_).length)/(NP+1),null]};
+ const [I,pI]=mp(z),L=lag(z),sims=Array.from({length:NP},()=>mI(shuf(z)));
+ const lisa=z.map((zi,i)=>{const o=z.filter((_,j)=>j!=i),Ii=zi*L[i];let c=0;for(let r=0;r<499;r++){const v=zi*mean(samp(o,k));if(Ii>0?v>=Ii:v<=Ii)c++}const p=(1+c)/500;return{p,q:p>.05?'Not significant':zi>0&&L[i]>0?'High-High':zi<0&&L[i]<0?'Low-Low':zi>0?'High-Low':'Low-High'}});
+ const gi=y.map((_,i)=>{const N=[i,...nb[i]],mi=N.length;return(N.reduce((t,j)=>t+y[j],0)-mi*m)/(s*Math.sqrt((n*mi-mi*mi)/(n-1)))});
+ const wbs=[...new Set(D.map(d=>d.water_body))],gr=wbs.map(w=>D.filter(d=>d.water_body==w)),kk=wbs.length;let H=NaN,pKW=NaN,ICC=NaN;
+ const lg=D.map(d=>Math.log((d.dead+.5)/(d.stocked-d.dead+.5))),gm=mean(lg),glg=wbs.map(w=>lg.filter((_,i)=>D[i].water_body==w));
+ if(kk>=2){const idx=y.map((v,i)=>[v,i]).sort((a,b)=>a[0]-b[0]),rk=Array(n);let i0=0,tie=0;while(i0<n){let j=i0;while(j+1<n&&idx[j+1][0]==idx[i0][0])j++;const r=(i0+j)/2+1;for(let q=i0;q<=j;q++)rk[idx[q][1]]=r;const t=j-i0+1;tie+=t**3-t;i0=j+1}
+  H=12/(n*(n+1))*gr.reduce((t,g)=>{const r=D.reduce((a,d,i)=>a+(d.water_body==g[0].water_body?rk[i]:0),0);return t+r*r/g.length},0)-3*(n+1);if(tie<n**3-n){H/=1-tie/(n**3-n);pKW=chiP(H,kk-1)}else H=NaN;
+  if(n>kk){const SSB=glg.reduce((t,g)=>t+g.length*(mean(g)-gm)**2,0),SSW=glg.reduce((t,g)=>t+g.reduce((a,v)=>a+(v-mean(g))**2,0),0),MSB=SSB/(kk-1),MSW=SSW/(n-kk),n0=(n-gr.reduce((t,g)=>t+g.length**2,0)/n)/(kk-1);ICC=(MSB-MSW)/(MSB+(n0-1)*MSW)}}
+ const tab=wbs.map((w,i)=>{const g=gr[i],dd=g.reduce((t,d)=>t+d.dead,0),ss=g.reduce((t,d)=>t+d.stocked,0);return[w,g.length,ss,dd,(100*dd/ss).toFixed(1),(100*mean(g.map(d=>d.dead/d.stocked))).toFixed(1),g.filter(d=>d.dead/d.stocked>=.1).length]});
+ const ts=D.reduce((t,d)=>t+d.stocked,0),td=D.reduce((t,d)=>t+d.dead,0);tab.push(['All farms',n,ts,td,(100*td/ts).toFixed(1),(100*m).toFixed(1),y.filter(v=>v>=.1).length]);
+ const out=y.map(v=>v>=.1?1:0),nO=out.reduce((a,b)=>a+b,0),bb=o=>{let c=0;nb.forEach((l,i)=>{if(o[i])l.forEach(j=>{if(o[j])c++})});return c},BB=bb(out),pBB=nO>0&&nO<n?(1+Array.from({length:NP},()=>bb(shuf(out))).filter(v=>v>=BB).length)/(NP+1):NaN;
+ const zs=v=>{const a=mean(v),b=sd(v);return b>0?v.map(x=>(x-a)/b):null};let lI=NaN,lp=NaN,rI=NaN,rp=NaN;const zl=zs(lg);if(zl)[lI,lp]=mp(zl);if(kk>=2){const wm=glg.map(mean),zr=zs(lg.map((v,i)=>v-wm[wbs.indexOf(D[i].water_body)]));if(zr)[rI,rp]=mp(zr)}
+ let PO=NaN,pPair=NaN;if(kk>=2&&kk<n){const wl=D.map(d=>d.water_body),ps=l=>{let a=0,na=0,b=0,nb2=0;for(let i=0;i<n;i++)for(let j=i+1;j<n;j++){const v=Math.abs(y[i]-y[j]);if(l[i]==l[j]){a+=v;na++}else{b+=v;nb2++}}return a/na-b/nb2};PO=ps(wl);const pps=Array.from({length:Math.min(NP,999)},()=>ps(shuf(wl)));pPair=(1+pps.filter(v=>v<=PO).length)/(pps.length+1)}
+ const Pp=ts,nm=()=>Math.sqrt(-2*Math.log(rnd()+1e-12))*Math.cos(6.2832*rnd()),pois=u=>{if(u>30)return Math.max(0,Math.round(u+Math.sqrt(u)*nm()));const E=Math.exp(-u);let c=0,p_=1;do{c++;p_*=rnd()}while(p_>E);return c-1};
+ const scan=c=>{const C=c.reduce((a,b)=>a+b,0);let best=0,bm=[];for(let a=0;a<n;a++){let cc=0,pp=0;for(let r=0;r<n;r++){const j=ord[a][r];cc+=c[j];pp+=D[j].stocked;if(pp>Pp/2)break;const e=pp*C/Pp;if(cc>e&&C>cc){const l=cc*Math.log(cc/e)+(C-cc)*Math.log((C-cc)/(C-e));if(l>best){best=l;bm=ord[a].slice(0,r+1)}}}}return[best,bm]};
+ const cs=D.map(d=>d.dead),[llr,cm]=scan(cs),mc=Array.from({length:199},()=>scan(D.map(d=>pois(d.stocked*td/Pp)))[0]),pS=(1+mc.filter(v=>v>=llr).length)/200,ins=new Set(cm),ci=cm.reduce((t,j)=>t+cs[j],0),cp=cm.reduce((t,j)=>t+D[j].stocked,0),RR=cm.length&&cp<Pp?(ci/cp)/((td-ci)/(Pp-cp)):NaN;
+ A={n,k,NP,I,pI,sims,z,L,lisa,gi,H,pKW,ICC,kk,tab,wbs,y,BB,pBB,nO,lI,lp,rI,rp,PO,pPair,llr,pS,RR,ins,scanWB:[...new Set(cm.map(j=>D[j].water_body))].join(', ')};return A}
+const f3=v=>!isFinite(v)?'n/a':v<1e-4?'<0.0001':v.toFixed(4),f2=(v,d=3)=>isFinite(v)?v.toFixed(d):'n/a';
+$('#run').onclick=()=>{if(D.length<10)return $('#am').textContent='Need at least 10 farms (30+ recommended). Load demo data to try.';$('#am').textContent='Running…';setTimeout(()=>{try{const a=A=analyse(),qq={};a.lisa.forEach(l=>qq[l.q]=(qq[l.q]||0)+1);$('#am').textContent='Done ✔ now see Plots.';
+ $('#out').innerHTML=`<div class="card"><b>Table 1. Mortality by shared water body</b><div class="sc"><table><tr><th>Water body<th>Farms<th>Stocked<th>Dead<th>Pooled %<th>Mean %<th>Outbreaks (≥10%)</tr>${a.tab.map(r=>'<tr>'+r.map(c=>`<td>${esc(c)}`).join('')+'</tr>').join('')}</table></div></div>
+ <div class="card"><b>Table 2. Spatial and shared-water tests</b><div class="sc"><table><tr><th>Test<th>Statistic<th>p</tr>
+ <tr><td>Moran's I (k=${a.k}, ${a.NP} perm.)<td>${f2(a.I)}<td>${f3(a.pI)}</tr>
+ <tr><td>Join-count: outbreak–outbreak links (${a.nO} farms)<td>${a.BB}<td>${f3(a.pBB)}</tr>
+ <tr><td>Kruskal-Wallis (water body)<td>H=${f2(a.H,2)}, df=${a.kk-1}<td>${f3(a.pKW)}</tr>
+ <tr><td>ICC (ANOVA, logit mortality)<td>${f2(a.ICC)}<td>–</tr>
+ <tr><td>Moran's I, logit mortality (raw)<td>${f2(a.lI)}<td>${f3(a.lp)}</tr>
+ <tr><td>Moran's I after removing water-body means<td>${f2(a.rI)}<td>${f3(a.rp)}</tr>
+ <tr><td>Same-water pair test (Δ mean |diff|)<td>${isFinite(a.PO)?(100*a.PO).toFixed(1)+' pts':'n/a'}<td>${f3(a.pPair)}</tr>
+ <tr><td>Poisson scan: ${a.ins.size} farms<td>RR=${f2(a.RR,2)}, LLR=${f2(a.llr,1)}<td>${f3(a.pS)}</tr></table></div>
+ <p class="p">Scan cluster water body: ${esc(a.scanWB||'none')}. If Moran's I falls after removing water-body means, shared water explains the clustering. Scan p: 199 Monte-Carlo runs (Poisson approximation). Exact Kulldorff and GLMM results: R tab or exported R script.</p></div>
+ <div class="card"><b>Table 3. LISA clusters (pseudo-p ≤ 0.05, one-sided)</b><div class="sc"><table><tr><th>Class<th>Farms</tr>${Object.entries(qq).map(([k,v])=>`<tr><td>${k}<td>${v}`).join('')}</table></div><p class="p">Gi* hot spots (z>1.96): ${a.gi.filter(v=>v>1.96).length}; cold spots (z<−1.96): ${a.gi.filter(v=>v<-1.96).length}. Not adjusted for multiple testing.</p></div>`}catch(e){$('#am').textContent='Error: '+e.message}},30)};
+$('#xt').onclick=()=>{const t=[...document.querySelectorAll('#out table')].map(t=>[...t.rows].map(r=>[...r.cells].map(c=>q(c.textContent)).join(',')).join('\n')).join('\n\n');t?dl('results_tables.csv',t,'text/csv'):alert('Run the analysis first')};
+// ---- plots
+const cv=$('#cv'),cx=cv.getContext('2d');
+const ramp=(st,t)=>{t=Math.max(0,Math.min(1,t))*(st.length-1);const i=Math.min(st.length-2,Math.floor(t)),f=t-i,a=st[i],b=st[i+1];return`rgb(${a.map((v,j)=>Math.round(v+(b[j]-v)*f))})`};
+const YR=[[255,255,204],[254,217,118],[253,141,60],[227,26,28],[128,0,38]],RB=[[33,102,172],[146,197,222],[247,247,247],[244,165,130],[178,24,43]];
+const QC={'High-High':'#d7191c','Low-Low':'#2c7bb6','High-Low':'#fdae61','Low-High':'#abd9e9','Not significant':'#dddddd'};
+function frame(t,xl,yl,x0,x1,y0,y1,ar){cx.setTransform(2,0,0,2,0,0);cx.fillStyle='#fff';cx.fillRect(0,0,1200,800);cx.fillStyle='#000';cx.textAlign='left';cx.font='bold 22px sans-serif';cx.fillText(t,70,36);
+ let L=90,T=60,Wd=ar?830:1060,Ht=640;if(ar){const sc=Math.min(Wd/((x1-x0)*ar),Ht/(y1-y0));Wd=(x1-x0)*ar*sc;Ht=(y1-y0)*sc}
+ const px=v=>L+(v-x0)/(x1-x0)*Wd,py=v=>T+Ht-(v-y0)/(y1-y0)*Ht,nx=xl!=='';cx.strokeStyle='#ccc';cx.lineWidth=1;cx.font='16px sans-serif';
+ for(let i=0;i<=4;i++){const vx=x0+(x1-x0)*i/4,vy=y0+(y1-y0)*i/4;cx.beginPath();if(nx){cx.moveTo(px(vx),T);cx.lineTo(px(vx),T+Ht)}cx.moveTo(L,py(vy));cx.lineTo(L+Wd,py(vy));cx.stroke();cx.fillStyle='#000';if(nx){cx.textAlign='center';cx.fillText(vx.toFixed(2),px(vx),T+Ht+20)}cx.textAlign='right';cx.fillText(vy.toFixed(2),L-6,py(vy)+5)}
+ cx.strokeStyle='#000';cx.strokeRect(L,T,Wd,Ht);cx.textAlign='center';cx.font='18px sans-serif';if(nx)cx.fillText(xl,L+Wd/2,T+Ht+46);cx.save();cx.translate(24,T+Ht/2);cx.rotate(-Math.PI/2);cx.fillText(yl,0,0);cx.restore();return{px,py,L,T,Wd,Ht}}
+function bar(st,lo,hi,t,x){cx.fillStyle='#000';cx.font='16px sans-serif';cx.textAlign='left';cx.fillText(t,x,90);for(let i=0;i<200;i++){cx.fillStyle=ramp(st,1-i/199);cx.fillRect(x,110+i,26,1.2)}cx.fillStyle='#000';cx.fillText(hi,x+34,122);cx.fillText(lo,x+34,310)}
+function geo(color,title,leg){const lo=D.map(d=>d.lon),la=D.map(d=>d.lat),dx=Math.max(...lo)-Math.min(...lo)||.02,dy=Math.max(...la)-Math.min(...la)||.02,x0=Math.min(...lo)-.06*dx,x1=Math.max(...lo)+.06*dx,y0=Math.min(...la)-.06*dy,y1=Math.max(...la)+.06*dy,c=Math.cos((y0+y1)/2*Math.PI/180),
+ g=frame(title,'Longitude (°E)','Latitude (°N)',x0,x1,y0,y1,c),ms=Math.max(...D.map(d=>d.stocked));
+ D.forEach((d,i)=>{cx.beginPath();cx.arc(g.px(d.lon),g.py(d.lat),5+9*Math.sqrt(d.stocked/ms),0,6.3);cx.fillStyle=color(i);cx.fill();cx.strokeStyle='#000';cx.lineWidth=1;cx.stroke()});
+ const kmW=(x1-x0)*111.32*c,Km=[1,2,5,10,20,50,100].filter(v=>v<=kmW/3).pop()||1,wpx=Km/kmW*g.Wd;cx.fillStyle='#000';cx.fillRect(g.L+14,g.T+g.Ht-24,wpx,6);cx.font='15px sans-serif';cx.textAlign='left';cx.fillText(Km+' km',g.L+14,g.T+g.Ht-30);
+ cx.font='bold 22px sans-serif';cx.fillText('N ↑',g.L+g.Wd-50,g.T+30);cx.font='13px sans-serif';cx.fillStyle='#666';cx.fillText('Point size = fish stocked. Coordinates: WGS84, no basemap.',g.L,g.T+g.Ht+68);leg(g)}
+function need(){if(D.length<10){alert('Need at least 10 farms');return 0}if(!A)try{analyse()}catch(e){alert(e.message);return 0}return 1}
+const PL={map(){const y=D.map(d=>d.dead/d.stocked),mx=Math.max(...y)||1;geo(i=>ramp(YR,y[i]/mx),'Fig 1. Farm mortality (%)',()=>bar(YR,'0',(100*mx).toFixed(0)+'%','Mortality',960))},
+ lisa(){if(!need())return;geo(i=>QC[A.lisa[i].q],'Fig 2. Local Moran (LISA) clusters',()=>Object.entries(QC).forEach(([k,c],i)=>{cx.fillStyle=c;cx.fillRect(960,100+i*30,20,20);cx.strokeStyle='#000';cx.strokeRect(960,100+i*30,20,20);cx.fillStyle='#000';cx.font='16px sans-serif';cx.textAlign='left';cx.fillText(k,988,117+i*30)}))},
+ gi(){if(!need())return;geo(i=>ramp(RB,1-(A.gi[i]/6+.5)),'Fig 3. Getis-Ord Gi* z-score',()=>bar([...RB].reverse(),'−3','+3','Gi* z',960))},
+ sc(){if(!need())return;geo(i=>A.ins.has(i)?'#d7191c':'#cccccc','Fig 6. Most likely cluster (scan statistic)',()=>{cx.fillStyle='#000';cx.font='16px sans-serif';cx.textAlign='left';cx.fillText(`RR = ${f2(A.RR,2)}, p = ${f3(A.pS)}`,960,110)})},
+ mo(){if(!need())return;const z=A.z,L=A.L,lo=Math.min(...z,...L)-.3,hi=Math.max(...z,...L)+.3,g=frame(`Fig 4. Moran scatterplot, I = ${f2(A.I)}, p = ${f3(A.pI)}`,'Standardised mortality (z)','Spatial lag of z',lo,hi,lo,hi,0);
+  z.forEach((v,i)=>{cx.beginPath();cx.arc(g.px(v),g.py(L[i]),6,0,6.3);cx.fillStyle='#2c7fb8';cx.fill();cx.strokeStyle='#000';cx.stroke()});cx.strokeStyle='#d00';cx.lineWidth=2;cx.beginPath();cx.moveTo(g.px(lo),g.py(A.I*lo));cx.lineTo(g.px(hi),g.py(A.I*hi));cx.stroke()},
+ bx(){if(!need())return;const w=A.wbs,vals=w.map(x=>D.filter(d=>d.water_body==x).map(d=>100*d.dead/d.stocked).sort((a,b)=>a-b)),mx=Math.max(...vals.flat())*1.1||1,g=frame(`Fig 5. Mortality by water body (KW p = ${f3(A.pKW)}, ICC = ${f2(A.ICC,2)})`,'','Mortality (%)',0,w.length,0,mx,0);
+  const qt=(a,p)=>{const i=(a.length-1)*p,f=Math.floor(i);return a[f]+(a[Math.min(f+1,a.length-1)]-a[f])*(i-f)};vals.forEach((a,i)=>{const c=g.px(i+.5),bw=g.Wd/w.length*.3;cx.fillStyle='#9ecae1';cx.fillRect(c-bw,g.py(qt(a,.75)),2*bw,g.py(qt(a,.25))-g.py(qt(a,.75)));cx.strokeStyle='#000';cx.lineWidth=1.5;cx.strokeRect(c-bw,g.py(qt(a,.75)),2*bw,g.py(qt(a,.25))-g.py(qt(a,.75)));cx.beginPath();cx.moveTo(c-bw,g.py(qt(a,.5)));cx.lineTo(c+bw,g.py(qt(a,.5)));cx.moveTo(c,g.py(a[0]));cx.lineTo(c,g.py(qt(a,.25)));cx.moveTo(c,g.py(qt(a,.75)));cx.lineTo(c,g.py(a[a.length-1]));cx.stroke();
+  a.forEach((v,j)=>{cx.beginPath();cx.arc(c+((j*37%11)-5)*3,g.py(v),3.5,0,6.3);cx.fillStyle='rgba(0,0,0,.6)';cx.fill()});cx.fillStyle='#000';cx.textAlign='center';cx.font='14px sans-serif';const nmx=w[i].length>24?w[i].slice(0,22)+'…':w[i];cx.fillText(nmx,c,g.T+g.Ht+22)})}};
+$('#pr').onclick=()=>{if(!D.length)return alert('Add or load data first');PL[$('#ps').value]()};$('#ps').onchange=$('#pr').onclick;
+$('#png').onclick=()=>{$('#pr').onclick();cv.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=$('#ps').value+'.png';document.body.appendChild(a);a.click();a.remove()})};
+// ---- install
+let ip=null;const inst=$('#inst');if(matchMedia('(display-mode: standalone)').matches)inst.style.display='none';
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();ip=e});addEventListener('appinstalled',()=>inst.style.display='none');
+inst.onclick=async()=>{if(ip){ip.prompt();await ip.userChoice;ip=null}else alert('To install: tap the Chrome ⋮ menu, then “Install app” (or “Add to Home screen”). If you do not see it, open this page in Chrome over https and reload once.')};
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+// ---- report pages: interpretation, discussion, conclusion
+const sg=p=>isFinite(p)&&p<.05,pt=p=>sg(p)?'statistically significant':'not statistically significant',pf=p=>'p'+(f3(p)=='<0.0001'?' < 0.0001':' = '+f3(p)),
+ stren=v=>{v=Math.abs(v);return v<.2?'weak':v<.4?'moderate':'strong'},iccw=v=>v<.05?'negligible':v<.15?'low':v<.4?'moderate':'high',
+ TH='border:1px solid #999;padding:3px 6px;font-size:10pt',
+ T_=(h,r)=>`<div class="sc"><table style="border-collapse:collapse"><tr>${h.map(x=>`<th style="${TH};background:#eee">${x}</th>`).join('')}</tr>${r.map(w=>'<tr>'+w.map(c=>`<td style="${TH}">${esc(c)}</td>`).join('')+'</tr>').join('')}</table></div>`;
+function RS(){if(D.length<10)throw Error('Add or load at least 10 farms first (Data tab).');const a=A||analyse(),t=a.tab.slice(0,-1),al=a.tab[a.tab.length-1],s=[...t].sort((x,y)=>y[4]-x[4]),q={};a.lisa.forEach(l=>q[l.q]=(q[l.q]||0)+1);
+ return{a,t,al,hi:s[0],lo:s[s.length-1],q,hot:a.gi.filter(v=>v>1.96).length,cold:a.gi.filter(v=>v<-1.96).length,gp:D.filter(d=>d.gps_accuracy_m>30).length,demo:D.length==60&&D[0].farm_id=='F001'&&D[0].lon==0.05224}}
+function figImgs(){const o=document.createElement('canvas');o.width=1200;o.height=800;const c=o.getContext('2d'),r={};['map','lisa','gi','mo','bx','sc'].forEach(k=>{PL[k]();c.fillStyle='#fff';c.fillRect(0,0,1200,800);c.drawImage(cv,0,0,1200,800);r[k]=o.toDataURL('image/jpeg',.85)});return r}
+function REP(k,F_){const{a,t,al,hi,lo,q,hot,cold,gp,demo}=RS(),n=a.n,HH=q['High-High']||0,LL=q['Low-Low']||0,HL=q['High-Low']||0,LH=q['Low-High']||0,
+ fg=(f,c)=>F_?`<p style="text-align:center"><img src="${F_[f]}" width="520"><br><i>${c}</i></p>`:'',
+ sig5=[a.pI,a.pBB,a.pKW,a.pPair,a.pS].filter(sg).length,multi=a.kk>1,clus=sg(a.pS)||HH>0||hot>0,
+ dm=demo?'<p><b>Note:</b> these results come from the built-in demo dataset and are illustrative only. Replace them with field data before reporting.</p>':'';
+ if(k=='I')return`<h3>1. Interpretation of results</h3>${dm}
+<h4>1.1 Mortality levels and differences between water bodies (Table 1; Figs 1 and 5)</h4>
+<p>Data from ${n} farms in ${a.kk} shared water bod${multi?'ies':'y'} were analysed. Of ${(+al[2]).toLocaleString()} fish stocked, ${(+al[3]).toLocaleString()} died, giving a pooled mortality of ${al[4]}% (mean farm-level mortality ${al[5]}%). ${al[6]} farm(s) (${(100*al[6]/n).toFixed(0)}%) reached the outbreak threshold of 10% mortality.${multi?` Pooled mortality was highest in ${hi[0]} (${hi[4]}%) and lowest in ${lo[0]} (${lo[4]}%)${+lo[4]>0?`, a ${(hi[4]/lo[4]).toFixed(1)}-fold difference`:''}.`:''}</p>
+${T_(['Water body','Farms','Stocked','Dead','Pooled %','Mean %','Outbreaks (≥10%)'],a.tab)}<p><i>Table 1. Mortality by shared water body.</i></p>
+${fg('map','Fig 1. Farm mortality map (point size = fish stocked).')}
+${multi?`<p>The Kruskal-Wallis test was ${pt(a.pKW)} (H = ${f2(a.H,2)}, df = ${a.kk-1}, ${pf(a.pKW)}), so ${sg(a.pKW)?'farm mortality differs between water bodies':'there is no clear evidence that mortality differs between water bodies'}.${isFinite(a.ICC)?` The intraclass correlation (ICC = ${f2(a.ICC)}) is ${iccw(a.ICC)}: roughly ${f2(Math.max(0,a.ICC)*100,0)}% of the variation in logit mortality lies between water bodies rather than between farms within the same water body.`:''} In Fig 5, ${sg(a.pKW)?'boxes that sit at clearly different heights show that the water body a farm belongs to is associated with its mortality':'heavily overlapping boxes show that farms in different water bodies have similar mortality'}.</p>${fg('bx','Fig 5. Mortality by water body.')}`:''}
+<h4>1.2 Global spatial pattern (Table 2; Fig 4)</h4>
+<p>Moran's I was ${f2(a.I)} (${pf(a.pI)}), which is ${pt(a.pI)}. ${sg(a.pI)&&a.I>0?`This indicates ${stren(a.I)} positive spatial autocorrelation: farms close to each other tend to have similar mortality, so high-mortality farms are surrounded by other high-mortality farms and low by low. In the Moran scatterplot (Fig 4) the points concentrate in the high-high and low-low quadrants and the fitted line slopes upward.`:sg(a.pI)?'The negative value indicates that neighbouring farms tend to differ (a dispersed pattern).':'There is no evidence that mortality is spatially clustered overall; the pattern is compatible with random distribution across the farms at this sample size.'}</p>${fg('mo','Fig 4. Moran scatterplot.')}
+<p>${a.nO>0&&a.nO<n?`The join-count test examined the ${a.nO} outbreak farms (≥10% mortality): outbreak-to-outbreak neighbour links numbered ${a.BB} (${pf(a.pBB)}), which is ${pt(a.pBB)}. ${sg(a.pBB)?'Outbreak farms are therefore neighbours of other outbreak farms more often than chance predicts.':'Outbreak farms are not neighbours of each other more often than chance predicts.'}`:'The join-count test could not be run because all or none of the farms exceeded the outbreak threshold.'}</p>
+${T_(['Test','Statistic','p'],[["Moran's I",f2(a.I),f3(a.pI)],['Join-count (outbreak links)',a.BB,f3(a.pBB)],['Kruskal-Wallis','H='+f2(a.H,2)+', df='+(a.kk-1),f3(a.pKW)],['ICC (logit mortality)',f2(a.ICC),'–'],["Moran's I, logit mortality (raw)",f2(a.lI),f3(a.lp)],["Moran's I after removing water-body means",f2(a.rI),f3(a.rp)],['Same-water pair test',isFinite(a.PO)?(100*a.PO).toFixed(1)+' pts':'n/a',f3(a.pPair)],['Poisson scan ('+a.ins.size+' farms)','RR='+f2(a.RR,2)+', LLR='+f2(a.llr,1),f3(a.pS)]])}<p><i>Table 2. Spatial and shared-water tests.</i></p>
+<h4>1.3 Is the clustering explained by shared water?</h4>
+<p>${!isFinite(a.rI)?'This comparison needs at least two water bodies and more farms than water bodies.':sg(a.lp)&&!sg(a.rp)?`Moran's I for logit mortality was ${f2(a.lI)} (${pf(a.lp)}) but fell to ${f2(a.rI)} (${pf(a.rp)}) once water-body means were removed. The spatial clustering is therefore largely explained by farms sharing a water body.`:sg(a.lp)&&sg(a.rp)?`Moran's I was ${f2(a.lI)} before and ${f2(a.rI)} after removing water-body means, and both remain significant. Clustering persists within water bodies, which suggests local gradients or farm-to-farm spread in addition to the water-body effect.`:`Moran's I for logit mortality was not significant before (${f2(a.lI)}, ${pf(a.lp)}) or after (${f2(a.rI)}, ${pf(a.rp)}) removing water-body means, so there is no significant clustering for shared water to explain.`}${isFinite(a.PO)?` In the same-water pair test, farm pairs in the same water body differed by ${Math.abs(100*a.PO).toFixed(1)} percentage points ${a.PO<0?'less':'more'} in mortality than pairs in different water bodies (${pf(a.pPair)}); this is ${pt(a.pPair)}${sg(a.pPair)&&a.PO<0?', so farms sharing water resemble each other':''}.`:''}</p>
+<h4>1.4 Local clusters and hot spots (Table 3; Figs 2, 3 and 6)</h4>
+<p>LISA identified ${HH} high-high and ${LL} low-low farms, plus ${HL} high-low and ${LH} low-high spatial outliers (pseudo-p ≤ 0.05); the remaining ${q['Not significant']||0} were not significant. Getis-Ord Gi* flagged ${hot} hot-spot and ${cold} cold-spot farms (|z| > 1.96). ${HH+hot>0?'High-high farms and hot spots mark locations where high mortality is concentrated and are the priority for investigation.':'No significant high-mortality hot spot was detected.'} These local tests are not adjusted for multiple testing, so isolated results should be read cautiously.</p>
+${T_(['Class','Farms'],Object.entries(q))}<p><i>Table 3. LISA cluster classes.</i></p>${fg('lisa','Fig 2. LISA cluster map.')}${fg('gi','Fig 3. Getis-Ord Gi* z-scores.')}
+<p>${sg(a.pS)?`The scan statistic found a significant most-likely cluster of ${a.ins.size} farms${a.scanWB?` in ${a.scanWB}`:''}. Fish in the cluster had ${f2(a.RR,2)} times the mortality risk of fish outside it (LLR = ${f2(a.llr,1)}, ${pf(a.pS)}; Fig 6).`:`The scan statistic did not find a significant cluster (RR = ${f2(a.RR,2)}, ${pf(a.pS)}); the highest-risk group of farms is no larger than expected by chance.`} The p-value comes from 199 Monte-Carlo runs with a Poisson approximation, so confirm it with the exact Kulldorff test in the R tab.</p>${fg('sc','Fig 6. Most likely cluster (scan statistic).')}`;
+ if(k=='D')return`<h3>2. Discussion</h3>${dm}
+<h4>2.1 Principal findings</h4>
+<p>${sig5} of the five headline tests (Moran's I, join-count, Kruskal-Wallis, same-water pair test and scan statistic) were significant at the 0.05 level, ${sig5>=4?'giving strong and consistent evidence that mortality is spatially structured and linked to shared water':sig5>=2?'giving moderate, partly consistent evidence of spatial structure':'giving little evidence that mortality is spatially structured in this sample'}. Pooled mortality was ${al[4]}%${multi?`, ranging from ${lo[4]}% in ${lo[0]} to ${hi[4]}% in ${hi[0]}`:''}.${sg(a.pS)?` The scan statistic located the highest-risk cluster${a.scanWB?` in ${a.scanWB}`:''} (RR = ${f2(a.RR,2)}).`:''}</p>
+<h4>2.2 Possible explanations</h4>
+${sig5>=2?`<p>Farms that share a water body are hydrologically connected, so several mechanisms could produce the similarity in mortality seen here. (a) <b>Pathogen transmission:</b> pathogens can move between farms through shared water, escaped or traded fish, nets, equipment and people. (b) <b>Common environmental conditions:</b> dissolved oxygen, temperature, ammonia, flushing and algal blooms vary by water body and affect all farms on it. (c) <b>Shared management:</b> farms in the same area often use the same hatcheries, feed suppliers and advice. (d) <b>Production system:</b> cages exchange water openly with the surrounding water, while ponds are more isolated, so exposure differs.</p><p>This cross-sectional survey cannot separate these mechanisms. They are hypotheses to be tested with water-quality covariates (GLMM in the R tab), pathogen testing and repeated visits.</p>`:`<p>The lack of clear spatial structure suggests that mortality in this sample is driven more by farm-level factors (stocking density, dissolved oxygen, ammonia, biosecurity, system type) than by location or shared water. A small sample may also have limited power to detect clustering; this is particularly likely with fewer than 30 farms (n = ${n}).</p>`}
+<h4>2.3 Relation to existing knowledge</h4>
+<p>Spatial clustering of disease among farms that share water is a recognised feature of aquaculture epidemiology, because water links otherwise separate farms. The present findings should be compared with published work on tilapia disease and farm-level mortality in Ghana and elsewhere [insert citations].</p>
+<h4>2.4 Implications for management</h4>
+<p>${clus?`Where clustering was found, control should be organised at the level of the water body or cluster rather than the single farm: coordinated stocking and fallowing, shared biosecurity protocols, early warning between neighbouring farms and targeted surveillance in the hot-spot areas${a.scanWB?` (notably ${a.scanWB})`:''}.`:'Without clear clustering, farm-level measures (lower stocking density, aeration, ammonia monitoring and stronger biosecurity) remain the main practical options, with routine mapping used to watch for new clusters.'}</p>
+<h4>2.5 Limitations</h4>
+<ul><li>Sample size: n = ${n} farms${n<30?', below the recommended 30, so power is limited':''}.</li><li>Neighbours were defined as the k = ${a.k} nearest farms; results can change with k, and distances are straight-line rather than along the water.</li><li>${gp?`${gp} farm(s) had GPS accuracy worse than 30 m, which may misplace them relative to neighbours.`:'GPS accuracy was acceptable for all farms with a recorded value.'}</li><li>Mortality was recorded at one time point, with no cause of death confirmed.</li><li>The in-app tests use permutation and approximations; local tests are not corrected for multiple comparisons; this page does not adjust for covariates.</li><li>Associations are not proof of causation.</li></ul>
+<h4>2.6 Further work</h4>
+<p>Run the full R analysis (R tab or exported script) to obtain the exact Kulldorff scan and mixed models with a water-body random effect, test sensitivity to k, add repeated visits and pathogen sampling, and collect data from more farms per water body.</p>`;
+ return`<h3>3. Conclusions</h3>${dm}<ol>
+<li>Pooled mortality across ${n} farms was ${al[4]}%, and ${al[6]} farm(s) exceeded the 10% outbreak threshold.${multi?` Mortality ${sg(a.pKW)?'differed':'did not differ significantly'} between water bodies (${pf(a.pKW)}).`:''}</li>
+<li>${sg(a.pI)&&a.I>0?`Mortality was positively spatially autocorrelated (Moran's I = ${f2(a.I)}, ${pf(a.pI)}): nearby farms had similar mortality.`:`No significant global spatial autocorrelation was found (Moran's I = ${f2(a.I)}, ${pf(a.pI)}).`}</li>
+<li>${!isFinite(a.rI)?'The role of shared water could not be assessed with these data.':sg(a.lp)&&!sg(a.rp)?'Shared water largely explained the spatial clustering of mortality.':sg(a.lp)?'Clustering persisted within water bodies, so shared water explains only part of it.':'There was no significant clustering for shared water to explain.'}</li>
+<li>${sg(a.pS)?`A significant high-risk cluster of ${a.ins.size} farms${a.scanWB?` in ${a.scanWB}`:''} was detected (RR = ${f2(a.RR,2)}).`:'No significant high-risk cluster was detected by the scan statistic.'}${hot?` ${hot} Gi* hot-spot farm(s) were identified.`:''}</li></ol>
+<p><b>Recommendations.</b> ${clus?'Prioritise the cluster and hot-spot areas for disease investigation and water-quality monitoring; manage biosecurity jointly across farms that share a water body.':'Focus on farm-level risk factors and keep monitoring the spatial pattern as more data arrive.'} Confirm these results with the exact R analysis and, where possible, repeated sampling.</p>
+<p><b>Overall.</b> ${sig5>=4?'The evidence supports the conclusion that mortality is spatially clustered and associated with shared water bodies.':sig5>=2?'The evidence partly supports spatial clustering of mortality; further data are needed to confirm it.':'The evidence does not support spatial clustering of mortality in this sample.'}${n<30?' The small sample means these conclusions are tentative.':''}</p>`}
+const RT={I:'Interpretation',D:'Discussion',C:'Conclusion'},mainEl=document.querySelector('main');
+['I','D','C'].forEach(k=>{const s=document.createElement('section');s.id='rp'+k;s.className='h';s.innerHTML=`<div class="card"><button class="b" data-cp="${k}">📋 Copy this page</button><button class="b s" data-cp="ALL">Copy full report</button><button class="b s" data-dl="1">Download Word (.doc)</button><div class="p" id="rm${k}">Editable text: copy it into Word or Docs. Updates when you re-run the analysis.</div></div><div class="card rep" id="rb${k}"></div>`;mainEl.appendChild(s)});
+function showRep(k){const b=$('#rb'+k);try{b.innerHTML=REP(k,k=='I'?figImgs():null)}catch(e){b.innerHTML=`<p class="w">${esc(e.message)}</p>`}}
+const docOf=ks=>{const F_=figImgs();return`<h2>Spatial clustering of tilapia mortality across shared water bodies</h2><p><i>Generated by TilapiaSpatial, ${today()}</i></p>`+ks.map(k=>REP(k,k=='I'?F_:null)).join('')};
+async function copyHtml(h){const d=document.createElement('div');d.innerHTML=h;d.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(d);let ok=0;try{await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([h],{type:'text/html'}),'text/plain':new Blob([d.innerText],{type:'text/plain'})})]);ok=1}catch(e){try{const r=document.createRange();r.selectNodeContents(d);const s=getSelection();s.removeAllRanges();s.addRange(r);ok=document.execCommand('copy');s.removeAllRanges()}catch(e2){}}d.remove();return ok}
+mainEl.addEventListener('click',async e=>{const c=e.target.dataset.cp,k=['I','D','C'].find(x=>!$('#rp'+x).classList.contains('h')),m=$('#rm'+k);
+ if(c){try{const ok=await copyHtml(c=='ALL'?docOf(['I','D','C']):REP(c,c=='I'?figImgs():null));m.textContent=ok?'Copied ✔ paste into Word or Google Docs.':'Copy was blocked. Use Download Word instead.'}catch(x){m.textContent=x.message}}
+ if(e.target.dataset.dl){try{dl('tilapia_report.doc','<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"><title>Report</title></head><body style="font-family:Calibri,Arial;font-size:11pt">'+docOf(['I','D','C'])+'</body></html>','application/msword');m.textContent='Downloaded full report.'}catch(x){m.textContent=x.message}}});
+draw();
+</script></body></html>
